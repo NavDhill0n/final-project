@@ -1,0 +1,15 @@
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures full height of the page */
+}
+
+.dashboard-content {
+    flex-grow: 1; /* This will take up remaining space, pushing footer down */
+}
+
+footer {
+    text-align: center;
+    background-color: #f1f1f1; /* Optional styling for the footer */
+    padding: 10px;
+}

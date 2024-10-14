@@ -8,11 +8,13 @@ const Admin = require('./admin');
 const Student = require('./student');
 const Teacher = require('./teacher');
 const authMiddleware = require('./authMiddleware');
+const cors = require('cors');
 
+app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
 // MongoDB Connection
-const mongoURI = 'mongodb://127.0.0.1:27017/newdatabase'; // Replace with your actual URI
+const mongoURI = 'mongodb://127.0.0.1:27017/abc'; // Replace with your actual URI
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB database "finalproject"'))
   .catch((err) => console.error('Error connecting to MongoDB:', err));
@@ -20,46 +22,62 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 // REST API Routes
 // Login route
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password, role } = req.body;
 
   try {
-    // Find the user by username (this could be an Admin, Student, or Teacher)
-    const user = await Admin.findOne({ username }) || await Student.findOne({ username }) || await Teacher.findOne({ username });
-    
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid username or password' });
+    console.log(`Received login request with email: ${email}, role: ${role}`);
+
+    let user;
+
+    if (role === 'admin') {
+      user = await Admin.findOne({ email: email.toLowerCase() });
+    } else if (role === 'student') {
+      user = await Student.findOne({ email: email.toLowerCase() });
+    } else if (role === 'teacher') {
+      user = await Teacher.findOne({ email: email.toLowerCase() });
+    } else {
+      return res.status(400).json({ message: 'Invalid role' });
     }
 
-    // Compare the password with the hashed password stored in the database
+    if (!user) {
+      console.log(`User not found for email: ${email}`);
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match:", isMatch);
 
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid username or password' });
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
 
     const jwtSecret = process.env.JWT_SECRET;
-    // Generate a JWT token
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.status(200).json({ token });
+    console.log("JWT Secret:", jwtSecret); 
+    const userRole = user.role; // Use the single role directly
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: userRole }, 
+      jwtSecret, 
+      { expiresIn: '1h' }
+    );
+    
+    res.status(200).json({ token, role: userRole });
   } catch (err) {
+    console.error(`Error during login: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });
 
 // Logout route (for JWT, logout is usually handled on the client side by simply removing the token)
 app.post('/logout', (req, res) => {
-  // On the server side, you can invalidate tokens by adding them to a blacklist
-  // This example assumes logout is handled by removing the token on the client side.
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
 // Hashing passwords before saving users
-
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+// Admin routes
 app.post('/admins', async (req, res) => {
   try {
     const newAdmin = new Admin(req.body);
@@ -158,13 +176,13 @@ app.get('/teachers/:username', async (req, res) => {
 // Add a new admin
 async function addAdmin() {
   try {
-    const password = 'PASSWORD!1234558@#';
+    const password = 'navdhillon8';
     const hashedPassword = await bcrypt.hash(password, 10);
     const admin = new Admin({
-      name: 'nav23458',
-      username: 'navdhillon23458',
-      email: 'nvdhillon1233458@example.com',
-      password: hashedPassword
+      name: 'navdhillon8',
+      email: 'navdhillon8@example.com',
+      password: hashedPassword,
+      role: 'admin' // Change from 'roles' to 'role'
     });
     const savedAdmin = await admin.save();
     console.log(savedAdmin);
@@ -176,14 +194,13 @@ async function addAdmin() {
 // Add a new student
 async function addStudent() {
   try {
-    const password = 'PASSWORD!123468@#';
+    const password = 'surajkumar9';
     const hashedPassword = await bcrypt.hash(password, 10);
     const student = new Student({
-      name: 'Suraj Kumar168',
-      username: 'SurajKumar168',
-      email: 'suraj168@example.com',
+      name: 'surajkumar9',
+      email: 'surajkumar9@example.com',
       password: hashedPassword,
-      studentId: 'S09876168'
+      role: 'student', // Change from 'roles' to 'role'
     });
     const savedStudent = await student.save();
     console.log(savedStudent);
@@ -195,14 +212,13 @@ async function addStudent() {
 // Add a new teacher
 async function addTeacher() {
   try {
-    const password = 'PASSWORD!123478@#';
+    const password = 'taniyabawa18';
     const hashedPassword = await bcrypt.hash(password, 10);
     const teacher = new Teacher({
-      name: 'Raj Kumar178',
-      username: 'RajKumar178',
-      email: 'raj178@example.com',
+      name: 'taniyabawa18',
+      email: 'taniyabawa18@example.com',
       password: hashedPassword,
-      teacherId: 'T0987617'
+      role: 'teacher', // Change from 'roles' to 'role'
     });
     const savedTeacher = await teacher.save();
     console.log(savedTeacher);
@@ -226,10 +242,8 @@ app.get('/public', (req, res) => {
   res.status(200).json({ message: 'This is a public route' });
 });
 
-
-
 // Start the server
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });

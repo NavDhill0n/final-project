@@ -1,0 +1,8 @@
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Full viewport height */
+    background-color: #f6f6f6; /* Light background color for better contrast */
+    margin: 0;
+}

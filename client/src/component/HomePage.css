@@ -1,0 +1,9 @@
+.main-content {
+     /* Full viewport height */
+    display: flex; /* Flexbox for centering */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    flex-direction: column; /* If you have multiple elements (like the animation and heading) */
+    background-color: #f0f0f0; /* Optional: Set a background color if needed */
+    color: black; /* Set text color */
+}

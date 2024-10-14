@@ -1,15 +1,12 @@
 // student.js
 const mongoose = require('mongoose');
 
+const rolesEnum = ['student', 'classRep', 'prefect']; // Roles specific to students 
+
 const studentSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
-  },
-  username: {
-    type: String,
-    required: true,
-    unique: true
   },
   email: {
     type: String,
@@ -20,11 +17,16 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  studentId: {
+  role: { // Change from 'roles' to 'role' and make it a single string
     type: String,
-    required: true,
-    unique: true
-  }
+    enum: rolesEnum,
+    default: 'student' // Default role is 'student'
+  },
 });
+
+// Method to check specific role
+studentSchema.methods.hasRole = function(role) {
+  return this.role === role; // Compare single role instead of array
+};
 
 module.exports = mongoose.model('Student', studentSchema);

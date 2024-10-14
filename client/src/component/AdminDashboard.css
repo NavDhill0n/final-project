@@ -1,0 +1,15 @@
+.admin-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full height of the viewport */
+}
+
+.admin-dashboard-content {
+    flex-grow: 1; /* Takes up the remaining space, pushing the footer to the bottom */
+}
+
+footer {
+    text-align: center;
+    background-color: #f1f1f1; /* Optional: Add any desired styling */
+    padding: 10px;
+}
